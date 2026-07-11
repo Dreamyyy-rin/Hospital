@@ -5,14 +5,11 @@ spring:
   application:
     name: medical-record-service
 
+  mongodb:
+    uri: mongodb://mongo:mongopass123@hospital-mongo:27017/medical_record_db?authSource=admin
+
   data:
     mongodb:
-      host: hospital-mongo
-      port: 27017
-      database: medical_record_db
-      username: mongo
-      password: mongopass123
-      authentication-database: admin
       auto-index-creation: true
 
 eureka:
