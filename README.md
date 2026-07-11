@@ -147,16 +147,157 @@ hospital-management/
 
 ### Prerequisites
 
-- **Java 21** or higher
-- **Maven 3.9+**
-- **Docker** and **Docker Compose**
-- **Bun** (for git hooks)
+| Tool | Version | Required | Purpose |
+|------|---------|----------|---------|
+| **Java** | 21+ | ✅ | Runtime for Spring Boot |
+| **Maven** | 3.9+ | ✅ | Build tool |
+| **Docker** | Latest | ✅ | Containerization |
+| **Bun** | Latest | ✅ | Git hooks (commitlint) |
+| **Git** | Latest | ✅ | Version control |
+
+---
+
+### 🪝 Setup Git Hooks (All Platforms)
+
+#### Mac / Linux
+
+```bash
+# Install dependencies (auto-installs husky)
+bun install
+
+# Make hooks executable
+chmod +x .husky/commit-msg .husky/pre-commit
+
+# Verify hooks are installed
+ls -la .husky/
+```
+
+#### Windows (PowerShell)
+
+```powershell
+# Install dependencies
+bun install
+
+# Make hooks executable (PowerShell)
+icacls .husky\commit-msg /grant Everyone:RX
+icacls .husky\pre-commit /grant Everyone:RX
+
+# Or using Git Bash (if installed)
+chmod +x .husky/commit-msg .husky/pre-commit
+
+# Verify hooks are installed
+dir .husky
+```
+
+#### Windows (Git Bash / WSL)
+
+```bash
+# Same as Mac/Linux
+bun install
+chmod +x .husky/commit-msg .husky/pre-commit
+```
+
+---
+
+### 🛠️ Platform-Specific Setup
+
+#### 🍎 Mac
+
+```bash
+# Install Homebrew (if not installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install Java 21
+brew install openjdk@21
+echo 'export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home' >> ~/.zshrc
+source ~/.zshrc
+
+# Install Maven
+brew install maven
+
+# Install Bun
+curl -fsSL https://bun.sh/install | bash
+
+# Install Docker Desktop
+brew install --cask docker
+
+# Start Docker
+open -a Docker
+```
+
+#### 🐧 Linux (Ubuntu/Debian)
+
+```bash
+# Update packages
+sudo apt update && sudo apt upgrade -y
+
+# Install Java 21
+sudo apt install openjdk-21-jdk -y
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+
+# Install Maven
+sudo apt install maven -y
+
+# Install Bun
+curl -fsSL https://bun.sh/install | bash
+
+# Install Docker
+sudo apt install docker.io docker-compose -y
+sudo usermod -aG docker $USER
+newgrp docker
+
+# Install Make (for Makefile commands)
+sudo apt install make -y
+```
+
+#### 🪟 Windows
+
+```powershell
+# Install Chocolatey (Package Manager)
+Set-ExecutionPolicy Bypass -Scope Process -Force
+iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+# Install Java 21
+choco install openjdk21 -y
+
+# Install Maven
+choco install maven -y
+
+# Install Bun
+irm bun.sh/install.ps1 | iex
+
+# Install Docker Desktop
+choco install docker-desktop -y
+
+# Install Git (if not installed)
+choco install git -y
+
+# Install Make (for Makefile commands)
+choco install make -y
+
+# Restart terminal after installations
+```
+
+**Alternative for Windows:** Use [WSL2](https://docs.microsoft.com/en-us/windows/wsl/install) (Windows Subsystem for Linux) for a Linux environment with full compatibility.
+
+---
+
+### ✅ Verify Installation
+
+```bash
+# Check all installed tools
+java -version
+mvn -version
+docker --version
+bun --version
+git --version
+```
 
 ---
 
 ## 🐳 Run with Docker (Recommended)
 
-### 1. Build and Start All Services
+### Mac / Linux
 
 ```bash
 # Navigate to project directory
@@ -169,42 +310,64 @@ make up
 docker compose up --build -d
 ```
 
-### 2. Check Service Status
+### Windows
 
+```powershell
+# Navigate to project directory
+cd hospital-management
+
+# Build and start all containers
+make up
+
+# Or use docker-compose directly
+docker compose up --build -d
+
+# If Make doesn't work, use these commands:
+docker compose build
+docker compose up -d
+```
+
+### Docker Commands (All Platforms)
+
+| Command | Description |
+|---------|-------------|
+| `make up` | Build and start all containers |
+| `make down` | Stop all containers |
+| `make ps` | View running containers |
+| `make logs` | View container logs |
+| `make status` | Check service health |
+| `make clean` | Remove containers and volumes |
+| `make rebuild` | Rebuild from scratch |
+
+**Without Makefile (Windows/Alternative):**
 ```bash
-# View running containers
-make ps
+# Start services
+docker compose up --build -d
 
-# Check health status
-make status
+# Stop services
+docker compose down
 
 # View logs
-make logs
+docker compose logs -f
+
+# Check status
+docker compose ps
+
+# Clean everything
+docker compose down -v --rmi all
+
+# Rebuild
+docker compose down -v
+docker compose up --build -d
 ```
-
-### 3. Stop Services
-
-```bash
-# Stop and remove containers (keeps volumes)
-make down
-
-# Full clean (removes containers, volumes, and images)
-make clean
-```
-
-### 4. Rebuild from Scratch
-
-```bash
-make rebuild
-```
-
----
 
 ## 💻 Run Manually (Development)
 
+> **Note:** For most development, use Docker. Manual run is for debugging or specific setups.
+
 ### 1. Start Databases
 
-#### PostgreSQL
+#### Mac / Linux
 ```bash
 docker run -d \
   --name hospital-postgres \
@@ -213,10 +376,7 @@ docker run -d \
   -e POSTGRES_DB=hospital_db \
   -p 5432:5432 \
   postgres:16-alpine
-```
 
-#### MongoDB
-```bash
 docker run -d \
   --name hospital-mongo \
   -e MONGO_INITDB_ROOT_USERNAME=mongo \
@@ -226,54 +386,29 @@ docker run -d \
   mongo:7
 ```
 
-### 2. Run Services (Each service already has application.yml configured)
+#### Windows (PowerShell)
+```powershell
+docker run -d --name hospital-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=hosppass123 -e POSTGRES_DB=hospital_db -p 5432:5432 postgres:16-alpine
 
-**Terminal 1 - Discovery Service:**
-```bash
-cd hospital-management/discovery-service
-mvn spring-boot:run
+docker run -d --name hospital-mongo -e MONGO_INITDB_ROOT_USERNAME=mongo -e MONGO_INITDB_ROOT_PASSWORD=mongopass123 -e MONGO_INITDB_DATABASE=medical_record_db -p 27017:27017 mongo:7
 ```
 
-**Terminal 2 - User Service:**
-```bash
-cd hospital-management/user-service
-mvn spring-boot:run
-```
+### 2. Run Each Service
 
-**Terminal 3 - Doctor Service:**
-```bash
-cd hospital-management/doctor-service
-mvn spring-boot:run
-```
+Start services in order (each in separate terminal/tab):
 
-**Terminal 4 - Payment Service:**
 ```bash
-cd hospital-management/payment-service
-mvn spring-boot:run
-```
+# Start Discovery Service first
+cd discovery-service && mvn spring-boot:run
 
-**Terminal 5 - Schedule Service:**
-```bash
-cd hospital-management/schedule-service
-mvn spring-boot:run
-```
-
-**Terminal 6 - Medical Record Service:**
-```bash
-cd hospital-management/medical-record-service
-mvn spring-boot:run
-```
-
-**Terminal 7 - Appointment Service (Orchestrator):**
-```bash
-cd hospital-management/appointment-service
-mvn spring-boot:run
-```
-
-**Terminal 8 - Gateway:**
-```bash
-cd hospital-management/gateway
-mvn spring-boot:run
+# Then start other services (can be in parallel)
+cd user-service && mvn spring-boot:run
+cd doctor-service && mvn spring-boot:run
+cd payment-service && mvn spring-boot:run
+cd schedule-service && mvn spring-boot:run
+cd medical-record-service && mvn spring-boot:run
+cd appointment-service && mvn spring-boot:run
+cd gateway && mvn spring-boot:run
 ```
 
 ### 3. Build JAR Files
@@ -383,6 +518,8 @@ eureka:
 
 ## 🛠️ Make Commands
 
+### Mac / Linux
+
 ```bash
 make help     # Show all available commands
 make up       # Build and start all containers
@@ -395,6 +532,29 @@ make ps       # Show running containers
 make status   # Show service health status
 make clean    # Remove containers, volumes, images
 make prune    # Clean up dangling images/volumes
+```
+
+### Windows (PowerShell / CMD)
+
+```powershell
+# If Make is installed (via choco install make)
+make up
+
+# Otherwise use docker-compose directly:
+docker compose up --build -d
+docker compose down
+docker compose ps
+docker compose logs -f
+docker compose down -v
+```
+
+### Windows (Git Bash / WSL)
+
+```bash
+# Same as Mac/Linux
+make up
+make down
+# etc.
 ```
 
 ---
@@ -467,6 +627,37 @@ curl http://localhost:8085/actuator/health      # Medical Record Service
 curl http://localhost:8086/actuator/health      # Payment Service
 ```
 
+### 📚 API Documentation (Swagger/OpenAPI)
+
+All services have Swagger UI for interactive API documentation.
+
+#### Main Gateway (Access All Services Here)
+
+| URL | Description |
+|-----|-------------|
+| http://localhost:8080/swagger-ui.html | Gateway Swagger - Select service from dropdown |
+| http://localhost:8080/v3/api-docs | OpenAPI JSON spec |
+
+#### Individual Service Documentation
+
+| Service | Swagger UI | Port |
+|---------|------------|------|
+| User Service | http://localhost:8080/swagger-ui.html?group=user-service | 8081 |
+| Doctor Service | http://localhost:8080/swagger-ui.html?group=doctor-service | 8082 |
+| Appointment Service | http://localhost:8080/swagger-ui.html?group=appointment-service | 8083 |
+| Schedule Service | http://localhost:8080/swagger-ui.html?group=schedule-service | 8084 |
+| Medical Record | http://localhost:8080/swagger-ui.html?group=medical-record-service | 8085 |
+| Payment Service | http://localhost:8080/swagger-ui.html?group=payment-service | 8086 |
+
+#### Using Swagger UI
+
+1. Open http://localhost:8080/swagger-ui.html
+2. Select a service from the **top dropdown** (e.g., user-service)
+3. Use the **Server dropdown** to choose:
+   - `http://localhost:8080` - Route through Gateway
+   - `http://localhost:8081` (etc.) - Direct to service
+4. Click any endpoint → **Try it out** to test
+
 ---
 
 ## 🔄 Orchestration Pattern Details
@@ -526,34 +717,78 @@ The **Appointment Service** acts as the central orchestrator because:
 
 ---
 
-## 📜 Git & Conventional Commits
+## ⚠️ DEVELOPMENT STANDARDS (MANDATORY)
 
-This project uses **Conventional Commits** with **Husky** for commit message enforcement.
+All developers **MUST** follow these standards before contributing.
 
-### Setup (One Time)
+---
+
+## 🪝 Git Hooks (Husky) - REQUIRED
+
+This project uses **Husky** to enforce commit message conventions. Git hooks are **mandatory** - they ensure consistent commit history and are part of the CI/CD pipeline.
+
+### One-Time Setup for New Developers
 
 ```bash
-# 1. Initialize git
-git init
-git add .
-git commit -m "initial commit"
+# 1. Install dependencies (auto-installs husky on first run)
+bun install
 
-# 2. Install husky hooks
-bunx husky install
+# 2. Husky is automatically initialized via prepare script
+# Just verify hooks are installed:
+ls -la .husky/
 
-# 3. Verify hooks are installed
-cat .husky/commit-msg
+# 3. Verify commit-msg hook is executable
+chmod +x .husky/commit-msg .husky/pre-commit
+
+# 4. Test the setup with a valid commit
+git commit -m "chore: test husky setup"
 ```
+
+### Why is this mandatory?
+
+- ✅ Enforces consistent commit history
+- ✅ Generates automatic changelog
+- ✅ Required for CI/CD pipeline
+- ✅ Makes code review easier
+- ✅ Follows industry best practices
+
+### Troubleshooting
+
+```bash
+# If hooks are not running:
+git config core.hooksPath .husky
+
+# Re-enable hooks if disabled:
+git hooks --enable
+
+# Skip hooks (NOT recommended, only for emergencies):
+git commit --no-verify -m "emergency fix"
+
+# Update husky:
+bun add -D husky@latest
+bun run prepare
+```
+
+---
+
+## 📜 Conventional Commits - REQUIRED
 
 ### Commit Message Format
 
 ```
-<type>: <description>
+<type>: <short description>
 
 [optional body]
 
 [optional footer]
 ```
+
+**Rules:**
+- Type is **required** and must be lowercase
+- Subject/description is **required**
+- Max **100 characters** total
+- No period at the end
+- Use imperative mood (e.g., "add" not "added")
 
 ### Commit Types
 
@@ -576,17 +811,21 @@ cat .husky/commit-msg
 ### Examples
 
 ```bash
-# Good commits
+# ✅ Valid commits
 git commit -m "feat: add appointment booking endpoint"
 git commit -m "fix: resolve payment processing error"
 git commit -m "docs: update API documentation"
-git commit -m "docker: add postgres health check"
-git commit -m "feat(appointment): implement scheduling validation"
+git commit -m "refactor: simplify user service"
+git commit -m "test: add unit tests for appointment"
+git commit -m "docker: add health check for postgres"
+git commit -m "ci: add github actions workflow"
 
-# Bad commits (will be rejected)
-git commit -m "fixed stuff"           # ❌ missing type
-git commit -m "WIP"                    # ❌ too short
-git commit -m "feat: Added new feature for users" # ❌ wrong case
+# ❌ Invalid commits (will be REJECTED)
+git commit -m "fixed stuff"                        # Missing type
+git commit -m "WIP"                               # Too short & no type
+git commit -m "Added new feature for users"        # Uppercase & wrong tense
+git commit -m "feat: something here."              # Period at end
+git commit -m "this is a very long message that exceeds the maximum allowed length which is 100 characters"  # Too long
 ```
 
 ### Generate Changelog
