@@ -5,19 +5,19 @@ module.exports = {
       2,
       'always',
       [
-        'feat',     # New feature
-        'fix',      # Bug fix
-        'docs',     # Documentation only changes
-        'style',    # Changes that do not affect the meaning of the code
-        'refactor', # Code change that neither fixes a bug nor adds a feature
-        'perf',     # A code change that improves performance
-        'test',     # Adding missing tests or correcting existing tests
-        'build',    # Changes that affect the build system or external dependencies
-        'ci',       # Changes to CI configuration files and scripts
-        'chore',    # Other changes that don't modify src or test files
-        'revert',   # Reverts a previous commit
-        'docker',   # Docker related changes
-        'db'        # Database related changes
+        'feat',
+        'fix',
+        'docs',
+        'style',
+        'refactor',
+        'perf',
+        'test',
+        'build',
+        'ci',
+        'chore',
+        'revert',
+        'docker',
+        'db'
       ]
     ],
     'type-case': [2, 'always', 'lower-case'],
@@ -25,5 +25,6 @@ module.exports = {
     'subject-empty': [2, 'never'],
     'subject-full-stop': [2, 'never', '.'],
     'header-max-length': [2, 'always', 100]
-  }
+  },
+  formatter: './commitlint-format.js'
 };

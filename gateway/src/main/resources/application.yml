@@ -11,6 +11,7 @@ spring:
         locator:
           enabled: false
       routes:
+        # ========== API Routes ==========
         - id: user-service
           uri: lb://user-service
           predicates:
@@ -53,6 +54,50 @@ spring:
           filters:
             - RewritePath=/payments/(?<path>.*), /api/\k<path>
 
+        # ========== Swagger/API Docs Proxy Routes ==========
+        # These proxy to each service's OpenAPI docs
+        - id: user-service-api-docs
+          uri: http://user-service:8081
+          predicates:
+            - Path=/api-docs/user/**
+          filters:
+            - RewritePath=/api-docs/user/(?<path>.*), /v3/api-docs/\k<path>
+
+        - id: doctor-service-api-docs
+          uri: http://doctor-service:8082
+          predicates:
+            - Path=/api-docs/doctor/**
+          filters:
+            - RewritePath=/api-docs/doctor/(?<path>.*), /v3/api-docs/\k<path>
+
+        - id: appointment-service-api-docs
+          uri: http://appointment-service:8083
+          predicates:
+            - Path=/api-docs/appointment/**
+          filters:
+            - RewritePath=/api-docs/appointment/(?<path>.*), /v3/api-docs/\k<path>
+
+        - id: schedule-service-api-docs
+          uri: http://schedule-service:8084
+          predicates:
+            - Path=/api-docs/schedule/**
+          filters:
+            - RewritePath=/api-docs/schedule/(?<path>.*), /v3/api-docs/\k<path>
+
+        - id: medical-record-service-api-docs
+          uri: http://medical-record-service:8085
+          predicates:
+            - Path=/api-docs/medical-record/**
+          filters:
+            - RewritePath=/api-docs/medical-record/(?<path>.*), /v3/api-docs/\k<path>
+
+        - id: payment-service-api-docs
+          uri: http://payment-service:8086
+          predicates:
+            - Path=/api-docs/payment/**
+          filters:
+            - RewritePath=/api-docs/payment/(?<path>.*), /v3/api-docs/\k<path>
+
 eureka:
   client:
     service-url:
@@ -67,7 +112,41 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,gateway
   endpoint:
     health:
       show-details: always
+
+# Swagger/OpenAPI Configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+    # Enable server selection dropdown
+    enable-swagger-ui: true
+  api-docs:
+    path: /v3/api-docs
+  show-actuator: false
+  # Group each service separately with its own OpenAPI spec
+  group-configs:
+    - group: 'user-service'
+      paths-to-match: '/users/**'
+      packages-to-scan: com.api.user
+    - group: 'doctor-service'
+      paths-to-match: '/doctors/**'
+      packages-to-scan: com.api.doctor
+    - group: 'appointment-service'
+      paths-to-match: '/appointments/**'
+      packages-to-scan: com.api.appointment
+    - group: 'schedule-service'
+      paths-to-match: '/schedules/**'
+      packages-to-scan: com.api.schedule
+    - group: 'medical-record-service'
+      paths-to-match: '/records/**'
+      packages-to-scan: com.api.medicalrecord
+    - group: 'payment-service'
+      paths-to-match: '/payments/**'
+      packages-to-scan: com.api.payment
