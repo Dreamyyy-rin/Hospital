@@ -26,7 +26,7 @@ function formatter(results) {
   });
 
   if (!hasErrors) {
-    output = `${green}✅ Commit successful!${reset}\n`;
+    output = `${green}Commit successful!${reset}\n`;
   }
 
   return output;
