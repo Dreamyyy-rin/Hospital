@@ -1,0 +1,73 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/users/**
+          filters:
+            - RewritePath=/users/(?<path>.*), /api/\k<path>
+
+        - id: doctor-service
+          uri: lb://doctor-service
+          predicates:
+            - Path=/doctors/**
+          filters:
+            - RewritePath=/doctors/(?<path>.*), /api/\k<path>
+
+        - id: appointment-service
+          uri: lb://appointment-service
+          predicates:
+            - Path=/appointments/**
+          filters:
+            - RewritePath=/appointments/(?<path>.*), /api/\k<path>
+
+        - id: schedule-service
+          uri: lb://schedule-service
+          predicates:
+            - Path=/schedules/**
+          filters:
+            - RewritePath=/schedules/(?<path>.*), /api/\k<path>
+
+        - id: medical-record-service
+          uri: lb://medical-record-service
+          predicates:
+            - Path=/records/**
+          filters:
+            - RewritePath=/records/(?<path>.*), /api/\k<path>
+
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/payments/**
+          filters:
+            - RewritePath=/payments/(?<path>.*), /api/\k<path>
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-service:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
