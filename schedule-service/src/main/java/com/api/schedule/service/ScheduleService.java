@@ -34,7 +34,7 @@ public class ScheduleService {
 
     public ScheduleModel updateSchedule(Integer id, ScheduleModel updatedSchedule) {
         return scheduleRepository.findById(id).map(schedule -> {
-            schedule.setDoctorId(updatedSchedule.getDoctorId());
+            schedule.setDoctor(updatedSchedule.getDoctor());
             schedule.setDate(updatedSchedule.getDate());
             schedule.setStartTime(updatedSchedule.getStartTime());
             schedule.setEndTime(updatedSchedule.getEndTime());
