@@ -30,7 +30,7 @@ public class DoctorService {
 
     public DoctorModel updateDoctor(Integer id, DoctorModel updatedDoctor) {
         return doctorRepository.findById(id).map(doctor -> {
-            doctor.setUserId(updatedDoctor.getUserId());
+            doctor.setUser(updatedDoctor.getUser());
             doctor.setSpecialization(updatedDoctor.getSpecialization());
             doctor.setLicenseNumber(updatedDoctor.getLicenseNumber());
             return doctorRepository.save(doctor);
