@@ -6,9 +6,9 @@ spring:
     name: payment-service
 
   datasource:
-    url: jdbc:postgresql://hospital-postgres:5432/hospital_db
-    username: postgres
-    password: hosppass123
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres
+    username: postgres.kjmbpxuqtpzkgkhndqum
+    password: WhenYh135790++
     driver-class-name: org.postgresql.Driver
 
   jpa:
