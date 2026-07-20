@@ -3,18 +3,34 @@ function formatter(results) {
   const resultsArray = Array.isArray(results) ? results : [results];
   const red = '\x1b[31m';
   const green = '\x1b[32m';
+  const yellow = '\x1b[33m';
   const reset = '\x1b[0m';
   let hasErrors = false;
   let output = '\n';
 
   resultsArray.forEach(result => {
-    if (result.errors && result.errors.length > 0) {
+    // Check top-level error count or results array
+    const totalErrors = (result.errorCount || 0) +
+      (result.results ? result.results.reduce((sum, r) => sum + (r.errors ? r.errors.length : 0), 0) : 0);
+
+    if (totalErrors > 0 || result.valid === false) {
       hasErrors = true;
       output += `${red}❌ COMMIT FAILED${reset}\n\n`;
 
-      result.errors.forEach(err => {
-        output += `   • ${err.text}\n`;
-      });
+      if (result.results) {
+        result.results.forEach(r => {
+          if (r.errors) {
+            r.errors.forEach(err => {
+              output += `   • ${err.message}\n`;
+            });
+          }
+          if (r.warnings) {
+            r.warnings.forEach(warn => {
+              output += `   ${yellow}⚠ ${warn.message}${reset}\n`;
+            });
+          }
+        });
+      }
 
       output += '\n📝 Example:\n';
       output += '   feat: add new feature\n\n';
@@ -26,7 +42,7 @@ function formatter(results) {
   });
 
   if (!hasErrors) {
-    output = `${green}Commit successful!${reset}\n`;
+    output = `${green}✓ Commit successful!${reset}\n`;
   }
 
   return output;
