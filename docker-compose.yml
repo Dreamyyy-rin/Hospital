@@ -1,76 +1,4 @@
 services:
-  # ==================== DATABASES ====================
-  hospital-postgres:
-    image: postgres:16-alpine
-    container_name: hospital-postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-
-  hospital-mongo:
-    image: mongo:7
-    container_name: hospital-mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  # ==================== ADMIN PANELS ====================
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - "8087:80"
-    networks:
-      - app-network
-    depends_on:
-      hospital-postgres:
-        condition: service_healthy
-
-  mongo-express:
-    image: mongo-express:latest
-    container_name: mongo-express
-    environment:
-      ME_CONFIG_MONGODB_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@hospital-mongo:27017/
-      ME_CONFIG_MONGODB_ADMINMODE: "true"
-      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
-      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
-    ports:
-      - "8088:8081"
-    networks:
-      - app-network
-    depends_on:
-      hospital-mongo:
-        condition: service_healthy
-
   # ==================== SERVICE REGISTRY ====================
   discovery-service:
     build:
@@ -88,7 +16,7 @@ services:
       retries: 10
       start_period: 60s
 
-  # ==================== BUSINESS SERVICES (PostgreSQL) ====================
+  # ==================== BUSINESS SERVICES (PostgreSQL via Supabase) ====================
   user-service:
     build:
       context: ./user-service
@@ -98,9 +26,11 @@ services:
       - "8081:8081"
     networks:
       - app-network
+    environment:
+      - SPRING_DATASOURCE_URL=${SUPABASE_POSTGRES_URL}
+      - SPRING_DATASOURCE_USERNAME=${SUPABASE_POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_POSTGRES_PASSWORD}
     depends_on:
-      hospital-postgres:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     healthcheck:
@@ -119,9 +49,11 @@ services:
       - "8082:8082"
     networks:
       - app-network
+    environment:
+      - SPRING_DATASOURCE_URL=${SUPABASE_POSTGRES_URL}
+      - SPRING_DATASOURCE_USERNAME=${SUPABASE_POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_POSTGRES_PASSWORD}
     depends_on:
-      hospital-postgres:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     healthcheck:
@@ -140,9 +72,11 @@ services:
       - "8086:8086"
     networks:
       - app-network
+    environment:
+      - SPRING_DATASOURCE_URL=${SUPABASE_POSTGRES_URL}
+      - SPRING_DATASOURCE_USERNAME=${SUPABASE_POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_POSTGRES_PASSWORD}
     depends_on:
-      hospital-postgres:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     healthcheck:
@@ -152,7 +86,7 @@ services:
       retries: 10
       start_period: 60s
 
-  # ==================== MEDICAL RECORD SERVICE (MongoDB) ====================
+  # ==================== MEDICAL RECORD SERVICE (MongoDB via Atlas) ====================
   medical-record-service:
     build:
       context: ./medical-record-service
@@ -162,9 +96,9 @@ services:
       - "8085:8085"
     networks:
       - app-network
+    environment:
+      - SPRING_DATA_MONGODB_URI=${MONGODB_ATLAS_URI}
     depends_on:
-      hospital-mongo:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     healthcheck:
@@ -183,9 +117,11 @@ services:
       - "8084:8084"
     networks:
       - app-network
+    environment:
+      - SPRING_DATASOURCE_URL=${SUPABASE_POSTGRES_URL}
+      - SPRING_DATASOURCE_USERNAME=${SUPABASE_POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_POSTGRES_PASSWORD}
     depends_on:
-      hospital-postgres:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
     healthcheck:
@@ -205,9 +141,11 @@ services:
       - "8083:8083"
     networks:
       - app-network
+    environment:
+      - SPRING_DATASOURCE_URL=${SUPABASE_POSTGRES_URL}
+      - SPRING_DATASOURCE_USERNAME=${SUPABASE_POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_POSTGRES_PASSWORD}
     depends_on:
-      hospital-postgres:
-        condition: service_healthy
       discovery-service:
         condition: service_healthy
       user-service:
@@ -260,7 +198,3 @@ services:
 networks:
   app-network:
     driver: bridge
-
-volumes:
-  postgres_data:
-  mongo_data:

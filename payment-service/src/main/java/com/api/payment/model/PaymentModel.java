@@ -17,44 +17,44 @@ import lombok.Data;
 @Data
 public class PaymentModel {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
 
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal totalAmount;
+  @Column(nullable = false, precision = 15, scale = 2)
+  private BigDecimal totalAmount;
 
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal amountPaid;
+  @Column(nullable = false, precision = 15, scale = 2)
+  private BigDecimal amountPaid;
 
-    @Column(precision = 15, scale = 2)
-    private BigDecimal changeAmount;
+  @Column(precision = 15, scale = 2)
+  private BigDecimal changeAmount;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private PaymentMethod paymentMethod;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20)
+  private PaymentMethod paymentMethod;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private PaymentStatus status;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20)
+  private PaymentStatus status;
 
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
+  @Column(updatable = false)
+  private LocalDateTime createdAt;
 
-    private LocalDateTime updatedAt;
+  private LocalDateTime updatedAt;
 
-    public enum PaymentMethod {
-        CASH,
-        DEBIT_CARD,
-        CREDIT_CARD,
-        TRANSFER,
-        INSURANCE
-    }
+  public enum PaymentMethod {
+    CASH,
+    DEBIT_CARD,
+    CREDIT_CARD,
+    TRANSFER,
+    INSURANCE,
+  }
 
-    public enum PaymentStatus {
-        PENDING,
-        SUCCESS,
-        FAILED,
-        REFUNDED
-    }
+  public enum PaymentStatus {
+    PENDING,
+    SUCCESS,
+    FAILED,
+    REFUNDED,
+  }
 }

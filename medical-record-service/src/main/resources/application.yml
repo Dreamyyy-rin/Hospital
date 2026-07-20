@@ -6,7 +6,7 @@ spring:
     name: medical-record-service
 
   mongodb:
-    uri: mongodb://mongo:mongopass123@hospital-mongo:27017/medical_record_db?authSource=admin
+    uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/medical_record_db}
 
   data:
     mongodb:
