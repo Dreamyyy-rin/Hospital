@@ -12,8 +12,7 @@ import lombok.Data;
 @Data
 public class UserModel {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-    
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
 }

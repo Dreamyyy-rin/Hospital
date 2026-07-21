@@ -1,43 +1,90 @@
 package com.api.doctor.service;
 
+import com.api.doctor.dto.DoctorRequestDTO;
+import com.api.doctor.dto.DoctorResponseDTO;
 import com.api.doctor.model.DoctorModel;
+import com.api.doctor.model.UserModel;
 import com.api.doctor.repository.DoctorRepository;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class DoctorService {
 
-    private final DoctorRepository doctorRepository;
+  private final DoctorRepository doctorRepository;
 
-    public DoctorService(DoctorRepository doctorRepository) {
-        this.doctorRepository = doctorRepository;
+  public List<DoctorModel> getAllDoctors() {
+    return doctorRepository.findAll();
+  }
+
+  public Optional<DoctorModel> getDoctorById(Integer id) {
+    return doctorRepository.findById(id);
+  }
+
+  public Optional<DoctorModel> getDoctorByUserId(Integer userId) {
+    return doctorRepository.findByUserId(userId);
+  }
+
+  public List<DoctorModel> getActiveDoctors() {
+    return doctorRepository.findByStatus("ACTIVE");
+  }
+
+  public DoctorResponseDTO createDoctor(DoctorRequestDTO request) {
+    UserModel user = new UserModel();
+    user.setId(request.getUserId());
+
+    DoctorModel doctor = new DoctorModel();
+    doctor.setUser(user);
+    doctor.setSpecialization(request.getSpecialization());
+    doctor.setLicenseNumber(request.getLicenseNumber());
+    doctor.setStatus(
+      request.getStatus() != null ? request.getStatus() : "ACTIVE"
+    );
+
+    DoctorModel saved = doctorRepository.save(doctor);
+    return toDTO(saved);
+  }
+
+  public DoctorResponseDTO updateDoctor(Integer id, DoctorRequestDTO request) {
+    DoctorModel doctor = doctorRepository
+      .findById(id)
+      .orElseThrow(() ->
+        new RuntimeException("Doctor not found with id " + id)
+      );
+
+    if (request.getUserId() != null) {
+      doctor.getUser().setId(request.getUserId());
+    }
+    if (request.getSpecialization() != null) {
+      doctor.setSpecialization(request.getSpecialization());
+    }
+    if (request.getLicenseNumber() != null) {
+      doctor.setLicenseNumber(request.getLicenseNumber());
+    }
+    if (request.getStatus() != null) {
+      doctor.setStatus(request.getStatus());
     }
 
-    public List<DoctorModel> getAllDoctors() {
-        return doctorRepository.findAll();
-    }
+    DoctorModel updated = doctorRepository.save(doctor);
+    return toDTO(updated);
+  }
 
-    public Optional<DoctorModel> getDoctorById(Integer id) {
-        return doctorRepository.findById(id);
-    }
+  public void deleteDoctor(Integer id) {
+    doctorRepository.deleteById(id);
+  }
 
-    public DoctorModel createDoctor(DoctorModel doctor) {
-        return doctorRepository.save(doctor);
+  public DoctorResponseDTO toDTO(DoctorModel doctor) {
+    DoctorResponseDTO dto = new DoctorResponseDTO();
+    dto.setId(doctor.getId());
+    if (doctor.getUser() != null) {
+      dto.setUserId(doctor.getUser().getId());
     }
-
-    public DoctorModel updateDoctor(Integer id, DoctorModel updatedDoctor) {
-        return doctorRepository.findById(id).map(doctor -> {
-            doctor.setUser(updatedDoctor.getUser());
-            doctor.setSpecialization(updatedDoctor.getSpecialization());
-            doctor.setLicenseNumber(updatedDoctor.getLicenseNumber());
-            return doctorRepository.save(doctor);
-        }).orElseThrow(() -> new RuntimeException("Doctor not found with id " + id));
-    }
-
-    public void deleteDoctor(Integer id) {
-        doctorRepository.deleteById(id);
-    }
+    dto.setSpecialization(doctor.getSpecialization());
+    dto.setLicenseNumber(doctor.getLicenseNumber());
+    dto.setStatus(doctor.getStatus());
+    return dto;
+  }
 }

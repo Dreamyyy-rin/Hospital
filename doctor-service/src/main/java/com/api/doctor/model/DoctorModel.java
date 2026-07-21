@@ -14,17 +14,15 @@ import lombok.Data;
 @Data
 public class DoctorModel {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private UserModel user;
+  @OneToOne
+  @JoinColumn(name = "user_id", referencedColumnName = "id")
+  private UserModel user;
 
-    private String specialization;
+  private String specialization;
 
-    private String licenseNumber;
-
-
+  private String licenseNumber;
 }
