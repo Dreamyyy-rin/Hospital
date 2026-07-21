@@ -40,6 +40,11 @@ management:
     health:
       show-details: always
 
+# Service URLs for Feign clients
+services:
+  user-service:
+    url: ${USER_SERVICE_URL:http://user-service:8081}
+
 # Swagger/OpenAPI Configuration
 springdoc:
   api-docs:

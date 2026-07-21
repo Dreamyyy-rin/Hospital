@@ -5,40 +5,49 @@ import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
 
-    @Bean
-    public OpenAPI customOpenAPI() {
-        return new OpenAPI()
-                .info(new Info()
-                        .title("Doctor Service API")
-                        .description("API documentation for Doctor Service - manages doctor profiles, specializations, and availability")
-                        .version("1.0.0")
-                        .contact(new Contact()
-                                .name("Hospital Management Team")
-                                .email("support@hospital.com"))
-                        .license(new License()
-                                .name("Apache 2.0")
-                                .url("https://www.apache.org/licenses/LICENSE-2.0")))
-                .servers(List.of(
-                        new Server()
-                                .url("http://localhost:8080")
-                                .description("Gateway (Local)"),
-                        new Server()
-                                .url("http://gateway:8080")
-                                .description("Gateway (Docker)"),
-                        new Server()
-                                .url("http://localhost:8082")
-                                .description("Doctor Service (Local)"),
-                        new Server()
-                                .url("http://doctor-service:8082")
-                                .description("Doctor Service (Docker)")
-                ));
-    }
+  @Bean
+  public OpenAPI customOpenAPI() {
+    return new OpenAPI()
+      .info(
+        new Info()
+          .title("Doctor Service API")
+          .description(
+            "API documentation for Doctor Service - manages doctor profiles, specializations, and availability"
+          )
+          .version("1.0.0")
+          .contact(
+            new Contact()
+              .name("Hospital Management Team")
+              .email("support@hospital.com")
+          )
+          .license(
+            new License()
+              .name("Apache 2.0")
+              .url("https://www.apache.org/licenses/LICENSE-2.0")
+          )
+      )
+      .servers(
+        List.of(
+          new Server()
+            .url("http://localhost:8080")
+            .description("Gateway (Local)"),
+          new Server()
+            .url("http://gateway:8080")
+            .description("Gateway (Docker)"),
+          new Server()
+            .url("http://localhost:8082")
+            .description("Doctor Service (Local)"),
+          new Server()
+            .url("http://doctor-service:8082")
+            .description("Doctor Service (Docker)")
+        )
+      );
+  }
 }

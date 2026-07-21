@@ -1,51 +1,106 @@
 package com.api.doctor.controller;
 
-import com.api.doctor.model.DoctorModel;
+import com.api.doctor.dto.DoctorRequestDTO;
+import com.api.doctor.dto.DoctorResponseDTO;
+import com.api.doctor.dto.DoctorWithUserRequestDTO;
+import com.api.doctor.dto.DoctorWithUserResponseDTO;
 import com.api.doctor.service.DoctorService;
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/doctors")
 public class DoctorController {
 
-    private final DoctorService doctorService;
+  private final DoctorService doctorService;
 
-    public DoctorController(DoctorService doctorService) {
-        this.doctorService = doctorService;
-    }
+  public DoctorController(DoctorService doctorService) {
+    this.doctorService = doctorService;
+  }
 
-    @GetMapping
-    public List<DoctorModel> getAllDoctors() {
-        return doctorService.getAllDoctors();
-    }
+  @GetMapping
+  public ResponseEntity<List<DoctorResponseDTO>> getAllDoctors() {
+    List<DoctorResponseDTO> doctors = doctorService
+      .getAllDoctors()
+      .stream()
+      .map(doctorService::toDTO)
+      .collect(Collectors.toList());
+    return ResponseEntity.ok(doctors);
+  }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<DoctorModel> getDoctorById(@PathVariable Integer id) {
-        return doctorService.getDoctorById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+  @GetMapping("/{id}")
+  public ResponseEntity<DoctorResponseDTO> getDoctorById(
+    @PathVariable Integer id
+  ) {
+    return doctorService
+      .getDoctorById(id)
+      .map(doctor -> ResponseEntity.ok(doctorService.toDTO(doctor)))
+      .orElse(ResponseEntity.notFound().build());
+  }
 
-    @PostMapping
-    public DoctorModel createDoctor(@RequestBody DoctorModel doctor) {
-        return doctorService.createDoctor(doctor);
-    }
+  @GetMapping("/user/{userId}")
+  public ResponseEntity<DoctorResponseDTO> getDoctorByUserId(
+    @PathVariable Integer userId
+  ) {
+    return doctorService
+      .getDoctorByUserId(userId)
+      .map(doctor -> ResponseEntity.ok(doctorService.toDTO(doctor)))
+      .orElse(ResponseEntity.notFound().build());
+  }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<DoctorModel> updateDoctor(@PathVariable Integer id, @RequestBody DoctorModel doctor) {
-        try {
-            return ResponseEntity.ok(doctorService.updateDoctor(id, doctor));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
+  @GetMapping("/active")
+  public ResponseEntity<List<DoctorResponseDTO>> getActiveDoctors() {
+    List<DoctorResponseDTO> doctors = doctorService
+      .getActiveDoctors()
+      .stream()
+      .map(doctorService::toDTO)
+      .collect(Collectors.toList());
+    return ResponseEntity.ok(doctors);
+  }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDoctor(@PathVariable Integer id) {
-        doctorService.deleteDoctor(id);
-        return ResponseEntity.noContent().build();
+  /**
+   * Create doctor with existing user (userId provided)
+   */
+  @PostMapping
+  public ResponseEntity<DoctorResponseDTO> createDoctor(
+    @Valid @RequestBody DoctorRequestDTO request
+  ) {
+    DoctorResponseDTO created = doctorService.createDoctor(request);
+    return ResponseEntity.ok(created);
+  }
+
+  /**
+   * Admin: Create both user account and doctor in one call
+   */
+  @PostMapping("/admin/create-with-user")
+  public ResponseEntity<DoctorWithUserResponseDTO> createDoctorWithUser(
+    @Valid @RequestBody DoctorWithUserRequestDTO request
+  ) {
+    DoctorWithUserResponseDTO created = doctorService.createDoctorWithUser(
+      request
+    );
+    return ResponseEntity.ok(created);
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<DoctorResponseDTO> updateDoctor(
+    @PathVariable Integer id,
+    @Valid @RequestBody DoctorRequestDTO request
+  ) {
+    try {
+      DoctorResponseDTO updated = doctorService.updateDoctor(id, request);
+      return ResponseEntity.ok(updated);
+    } catch (RuntimeException e) {
+      return ResponseEntity.notFound().build();
     }
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteDoctor(@PathVariable Integer id) {
+    doctorService.deleteDoctor(id);
+    return ResponseEntity.noContent().build();
+  }
 }

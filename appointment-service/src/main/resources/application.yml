@@ -40,6 +40,11 @@ management:
     health:
       show-details: always
 
+# Appointment Configuration
+appointment:
+  price: 150000
+  currency: IDR
+
 # Swagger/OpenAPI Configuration
 springdoc:
   api-docs:
