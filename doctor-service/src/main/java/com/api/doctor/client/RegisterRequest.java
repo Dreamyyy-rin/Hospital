@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterRequest {
 
-    private String name;
-    private String email;
-    private String password;
-    private String phone;
-    private String role;
+  private String name;
+  private String email;
+  private String password;
+  private String phone;
+  private String role;
 }

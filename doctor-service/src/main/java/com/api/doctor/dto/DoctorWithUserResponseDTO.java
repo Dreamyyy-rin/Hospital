@@ -11,18 +11,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DoctorWithUserResponseDTO {
 
-    private UserDTO user;
-    private DoctorResponseDTO doctor;
+  private UserDTO user;
+  private DoctorResponseDTO doctor;
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class UserDTO {
-        private Integer id;
-        private String name;
-        private String email;
-        private String role;
-        private String phone;
-    }
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class UserDTO {
+
+    private Integer id;
+    private String name;
+    private String email;
+    private String role;
+    private String phone;
+  }
 }
