@@ -1,35 +1,34 @@
 package com.api.user.model;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.Data;
 
 @Entity
 @Data
 @Table(name = "users")
 public class UserModel {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
 
-    private String name;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer id;
 
-    @Column(unique = true)
-    private String email;
+  private String name;
 
-    private String password;
+  @Column(unique = true)
+  private String email;
 
-    private String role;
+  private String password;
 
-    private String phone;
+  private String role;
 
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
+  private String phone;
 
+  @Column(updatable = false)
+  private LocalDateTime createdAt;
 }
