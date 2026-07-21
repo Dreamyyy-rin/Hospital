@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PaymentRepository extends JpaRepository<PaymentModel, Integer> {
-
-    List<PaymentModel> findByStatus(PaymentStatus status);
+public interface PaymentRepository
+  extends JpaRepository<PaymentModel, Integer>
+{
+  List<PaymentModel> findByStatus(PaymentStatus status);
 }
