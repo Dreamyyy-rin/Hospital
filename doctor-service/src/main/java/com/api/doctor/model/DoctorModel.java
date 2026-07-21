@@ -21,8 +21,6 @@ public class DoctorModel {
   private Integer userId;
 
   private String specialization;
-
   private String licenseNumber;
-
   private String status;
 }
