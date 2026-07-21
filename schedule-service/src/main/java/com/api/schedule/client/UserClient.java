@@ -1,5 +1,8 @@
 package com.api.schedule.client;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +16,9 @@ public interface UserClient {
   @GetMapping("/users/{id}")
   ResponseEntity<UserResponse> getUserById(@PathVariable("id") Integer id);
 
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
   class UserResponse {
 
     private Integer id;
@@ -20,45 +26,5 @@ public interface UserClient {
     private String email;
     private String role;
     private String phone;
-
-    public Integer getId() {
-      return id;
-    }
-
-    public void setId(Integer id) {
-      this.id = id;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public void setName(String name) {
-      this.name = name;
-    }
-
-    public String getEmail() {
-      return email;
-    }
-
-    public void setEmail(String email) {
-      this.email = email;
-    }
-
-    public String getRole() {
-      return role;
-    }
-
-    public void setRole(String role) {
-      this.role = role;
-    }
-
-    public String getPhone() {
-      return phone;
-    }
-
-    public void setPhone(String phone) {
-      this.phone = phone;
-    }
   }
 }
