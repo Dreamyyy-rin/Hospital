@@ -1,7 +1,6 @@
 package com.api.user.config;
 
 import com.api.user.filter.JwtFilter;
-import com.api.user.service.MyUserDetailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
