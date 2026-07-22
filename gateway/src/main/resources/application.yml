@@ -6,6 +6,8 @@ spring:
     name: gateway
   main:
     web-application-type: reactive
+  security:
+    enabled: false
 
   cloud:
     gateway:
@@ -15,95 +17,98 @@ spring:
           lower-case-service-id: true
       routes:
         # ========== API Routes ==========
-        # Request diteruskan ke service via Eureka Load Balancer (lb://)
-        # RewritePath: hapus prefix publik, tambahkan /api untuk controller
-
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/users/**
-          filters:
-            - RewritePath=/users/(?<path>.*), /api/${path}
+            - Path=/users/**, /api/auth/**
 
         - id: doctor-service
           uri: lb://doctor-service
           predicates:
             - Path=/doctors/**
-          filters:
-            - RewritePath=/doctors/(?<path>.*), /api/${path}
 
         - id: appointment-service
           uri: lb://appointment-service
           predicates:
             - Path=/appointments/**
-          filters:
-            - RewritePath=/appointments/(?<path>.*), /api/${path}
 
         - id: schedule-service
           uri: lb://schedule-service
           predicates:
             - Path=/schedules/**
-          filters:
-            - RewritePath=/schedules/(?<path>.*), /api/${path}
 
         - id: medical-record-service
           uri: lb://medical-record-service
           predicates:
             - Path=/records/**
           filters:
-            - RewritePath=/records/(?<path>.*), /api/${path}
+            - RewritePath=/records/(?<path>.*), /medical-records/$1
 
         - id: payment-service
           uri: lb://payment-service
           predicates:
             - Path=/payments/**
-          filters:
-            - RewritePath=/payments/(?<path>.*), /api/${path}
 
-        # ========== Swagger / OpenAPI Aggregation Routes ==========
-        # Proxy ke /v3/api-docs masing-masing service via Eureka
-
-        - id: user-service-api-docs
+        # ========== Swagger / OpenAPI Routes ==========
+        # Route to individual service swagger docs
+        - id: user-service-swagger
           uri: lb://user-service
           predicates:
-            - Path=/api-docs/user/**
+            - Path=/swagger/user/**
           filters:
-            - RewritePath=/api-docs/user/(?<path>.*), /v3/api-docs/${path}
+            - RewritePath=/swagger/user/(?<path>.*), /$1
 
-        - id: doctor-service-api-docs
+        - id: doctor-service-swagger
           uri: lb://doctor-service
           predicates:
-            - Path=/api-docs/doctor/**
+            - Path=/swagger/doctor/**
           filters:
-            - RewritePath=/api-docs/doctor/(?<path>.*), /v3/api-docs/${path}
+            - RewritePath=/swagger/doctor/(?<path>.*), /$1
 
-        - id: appointment-service-api-docs
+        - id: appointment-service-swagger
           uri: lb://appointment-service
           predicates:
-            - Path=/api-docs/appointment/**
+            - Path=/swagger/appointment/**
           filters:
-            - RewritePath=/api-docs/appointment/(?<path>.*), /v3/api-docs/${path}
+            - RewritePath=/swagger/appointment/(?<path>.*), /$1
 
-        - id: schedule-service-api-docs
+        - id: schedule-service-swagger
           uri: lb://schedule-service
           predicates:
-            - Path=/api-docs/schedule/**
+            - Path=/swagger/schedule/**
           filters:
-            - RewritePath=/api-docs/schedule/(?<path>.*), /v3/api-docs/${path}
+            - RewritePath=/swagger/schedule/(?<path>.*), /$1
 
-        - id: medical-record-service-api-docs
+        - id: medical-record-service-swagger
           uri: lb://medical-record-service
           predicates:
-            - Path=/api-docs/medical-record/**
+            - Path=/swagger/medical-record/**
           filters:
-            - RewritePath=/api-docs/medical-record/(?<path>.*), /v3/api-docs/${path}
+            - RewritePath=/swagger/medical-record/(?<path>.*), /$1
 
-        - id: payment-service-api-docs
+        - id: payment-service-swagger
           uri: lb://payment-service
           predicates:
-            - Path=/api-docs/payment/**
+            - Path=/swagger/payment/**
           filters:
-            - RewritePath=/api-docs/payment/(?<path>.*), /v3/api-docs/${path}
+            - RewritePath=/swagger/payment/(?<path>.*), /$1
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: user-service
+        url: /swagger/user/v3/api-docs
+      - name: doctor-service
+        url: /swagger/doctor/v3/api-docs
+      - name: appointment-service
+        url: /swagger/appointment/v3/api-docs
+      - name: schedule-service
+        url: /swagger/schedule/v3/api-docs
+      - name: medical-record-service
+        url: /swagger/medical-record/v3/api-docs
+      - name: payment-service
+        url: /swagger/payment/v3/api-docs
 
 # ========== Eureka Client Configuration ==========
 eureka:
@@ -130,30 +135,3 @@ management:
       show-details: always
     gateway:
       access: unrestricted
-
-# ========== Swagger / OpenAPI Aggregator ==========
-# Akses: http://localhost:8080/swagger-ui.html
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
-    operationsSorter: method
-    tagsSorter: alpha
-    tryItOutEnabled: true
-    urls:
-      - name: user-service
-        url: /api-docs/user
-      - name: doctor-service
-        url: /api-docs/doctor
-      - name: appointment-service
-        url: /api-docs/appointment
-      - name: schedule-service
-        url: /api-docs/schedule
-      - name: medical-record-service
-        url: /api-docs/medical-record
-      - name: payment-service
-        url: /api-docs/payment
-  api-docs:
-    path: /v3/api-docs
-    enabled: true
-  show-actuator: false

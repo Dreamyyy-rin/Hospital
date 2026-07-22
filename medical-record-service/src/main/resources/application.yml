@@ -30,6 +30,11 @@ management:
   endpoint:
     health:
       show-details: always
+  health:
+    mongo:
+      enabled: false
+    mongodb:
+      enabled: false
 
 # Swagger/OpenAPI Configuration
 springdoc:

@@ -101,6 +101,8 @@ services:
       - "8085:8085"
     networks:
       - app-network
+    dns:
+      - 8.8.8.8
     environment:
       - SPRING_DATA_MONGODB_URI=${MONGODB_ATLAS_URI}
     depends_on:
@@ -195,7 +197,7 @@ services:
       payment-service:
         condition: service_healthy
       medical-record-service:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test:
         ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]

@@ -30,16 +30,24 @@ public class SecurityConfig {
       .csrf(csrf -> csrf.disable())
       .authorizeHttpRequests(auth ->
         auth
-          // Auth endpoints - public
-          .requestMatchers("/api/auth/**")
+          // Auth endpoints - public (both /api/auth and /users/api/auth)
+          .requestMatchers("/api/auth/**", "/users/api/auth/**")
           .permitAll()
-          // User endpoints
+          // User GET endpoints - authenticated
           .requestMatchers(HttpMethod.GET, "/users/{id}")
           .authenticated()
           .requestMatchers(HttpMethod.GET, "/users/email/{email}")
           .authenticated()
+          .requestMatchers(HttpMethod.GET, "/users/role/{role}")
+          .authenticated()
+          .requestMatchers(HttpMethod.GET, "/users")
+          .authenticated()
+          // User endpoints - ADMIN only
           .requestMatchers("/users/**")
           .hasRole("ADMIN")
+          // Swagger / OpenAPI endpoints - public
+          .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/swagger/**")
+          .permitAll()
           // Actuator endpoints
           .requestMatchers("/actuator/**")
           .permitAll()
