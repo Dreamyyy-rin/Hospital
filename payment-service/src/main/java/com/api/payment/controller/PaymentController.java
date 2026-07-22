@@ -1,7 +1,10 @@
 package com.api.payment.controller;
 
-import com.api.payment.model.PaymentModel;
+import com.api.payment.dto.PaymentRequestDTO;
+import com.api.payment.dto.PaymentResponseDTO;
+import com.api.payment.dto.PaymentStatusUpdateRequestDTO;
 import com.api.payment.service.PaymentService;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,12 +28,14 @@ public class PaymentController {
   }
 
   @GetMapping
-  public List<PaymentModel> getAllPayments() {
+  public List<PaymentResponseDTO> getAllPayments() {
     return paymentService.getAllPayments();
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<PaymentModel> getPaymentById(@PathVariable Integer id) {
+  public ResponseEntity<PaymentResponseDTO> getPaymentById(
+    @PathVariable Integer id
+  ) {
     return paymentService
       .getPaymentById(id)
       .map(ResponseEntity::ok)
@@ -38,34 +43,32 @@ public class PaymentController {
   }
 
   @PostMapping
-  public PaymentModel createPayment(@RequestBody PaymentModel payment) {
-    return paymentService.createPayment(payment);
+  public ResponseEntity<PaymentResponseDTO> createPayment(
+    @Valid @RequestBody PaymentRequestDTO request
+  ) {
+    return ResponseEntity.ok(paymentService.createPayment(request));
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<PaymentModel> updatePayment(
+  public ResponseEntity<PaymentResponseDTO> updatePayment(
     @PathVariable Integer id,
-    @RequestBody PaymentModel payment
+    @Valid @RequestBody PaymentRequestDTO request
   ) {
-    try {
-      return ResponseEntity.ok(paymentService.updatePayment(id, payment));
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    }
+    return paymentService
+      .updatePayment(id, request)
+      .map(ResponseEntity::ok)
+      .orElse(ResponseEntity.notFound().build());
   }
 
   @PatchMapping("/{id}/status")
-  public ResponseEntity<PaymentModel> updatePaymentStatus(
+  public ResponseEntity<PaymentResponseDTO> updatePaymentStatus(
     @PathVariable Integer id,
-    @RequestBody PaymentModel payment
+    @Valid @RequestBody PaymentStatusUpdateRequestDTO request
   ) {
-    try {
-      return ResponseEntity.ok(
-        paymentService.updatePaymentStatus(id, payment.getStatus())
-      );
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    }
+    return paymentService
+      .updatePaymentStatus(id, request.getStatus())
+      .map(ResponseEntity::ok)
+      .orElse(ResponseEntity.notFound().build());
   }
 
   @DeleteMapping("/{id}")

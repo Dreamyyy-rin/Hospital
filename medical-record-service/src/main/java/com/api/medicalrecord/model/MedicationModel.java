@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class MedicationModel {
-    private String name;
-    private String dose;
 
+  private String name;
+  private String dose;
 }

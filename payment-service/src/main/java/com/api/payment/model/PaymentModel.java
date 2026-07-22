@@ -21,6 +21,8 @@ public class PaymentModel {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
+  private Integer appointmentId;
+
   @Column(nullable = false, precision = 15, scale = 2)
   private BigDecimal totalAmount;
 
