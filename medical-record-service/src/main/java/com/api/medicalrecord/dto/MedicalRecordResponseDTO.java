@@ -1,17 +1,18 @@
-package com.api.medicalrecord.model;
+package com.api.medicalrecord.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
-
-import com.api.medicalrecord.dto.MedicationDTO;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.NoArgsConstructor;
 
 @Data
-@Document(collection = "medical_records")
-public class MedicalRecordModel {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class MedicalRecordResponseDTO {
 
-    @Id
     private String id;
     private String appointmentId;
     private Integer doctorId;
@@ -22,6 +23,6 @@ public class MedicalRecordModel {
     private Double temperature;
     private List<MedicationDTO> medications;
     private String doctorNotes;
-    private java.time.LocalDateTime createdAt;
-    private java.time.LocalDateTime updatedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

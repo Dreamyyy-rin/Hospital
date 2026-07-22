@@ -1,7 +1,10 @@
 package com.api.medicalrecord.controller;
 
+import com.api.medicalrecord.dto.MedicalRecordRequestDTO;
+import com.api.medicalrecord.dto.MedicalRecordResponseDTO;
+import com.api.medicalrecord.service.MedicalRecordService;
+import jakarta.validation.Valid;
 import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,9 +14,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.api.medicalrecord.model.MedicalRecordModel;
-import com.api.medicalrecord.service.MedicalRecordService;
 
 @RestController
 @RequestMapping("/medical-records")
@@ -26,30 +26,31 @@ public class MedicalRecordController {
     }
 
     @GetMapping
-    public List<MedicalRecordModel> getAllMedicalRecords() {
+    public List<MedicalRecordResponseDTO> getAllMedicalRecords() {
         return medicalRecordService.getAllMedicalRecords();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MedicalRecordModel> getMedicalRecordById(@PathVariable String id) {
+    public ResponseEntity<MedicalRecordResponseDTO> getMedicalRecordById(
+            @PathVariable String id) {
         return medicalRecordService.getMedicalRecordById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public MedicalRecordModel createMedicalRecord(@RequestBody MedicalRecordModel medicalRecord) {
-        return medicalRecordService.createMedicalRecord(medicalRecord);
+    public ResponseEntity<MedicalRecordResponseDTO> createMedicalRecord(
+            @Valid @RequestBody MedicalRecordRequestDTO request) {
+        return ResponseEntity.ok(medicalRecordService.createMedicalRecord(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MedicalRecordModel> updateMedicalRecord(@PathVariable String id,
-            @RequestBody MedicalRecordModel medicalRecord) {
-        try {
-            return ResponseEntity.ok(medicalRecordService.updateMedicalRecord(id, medicalRecord));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<MedicalRecordResponseDTO> updateMedicalRecord(
+            @PathVariable String id,
+            @Valid @RequestBody MedicalRecordRequestDTO request) {
+        return medicalRecordService.updateMedicalRecord(id, request)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
@@ -57,5 +58,4 @@ public class MedicalRecordController {
         medicalRecordService.deleteMedicalRecord(id);
         return ResponseEntity.noContent().build();
     }
-
 }
