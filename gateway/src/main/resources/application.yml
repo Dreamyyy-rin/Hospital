@@ -11,12 +11,12 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: false          # Routing manual (bukan auto-discovery)
+          enabled: false
           lower-case-service-id: true
       routes:
         # ========== API Routes ==========
-        # Semua request diteruskan ke service tujuan via Eureka Load Balancer (lb://)
-        # RewritePath: hapus prefix path publik, tambahkan prefix /api yang digunakan controller
+        # Request diteruskan ke service via Eureka Load Balancer (lb://)
+        # RewritePath: hapus prefix publik, tambahkan /api untuk controller
 
         - id: user-service
           uri: lb://user-service
@@ -61,8 +61,7 @@ spring:
             - RewritePath=/payments/(?<path>.*), /api/${path}
 
         # ========== Swagger / OpenAPI Aggregation Routes ==========
-        # Proxy ke endpoint /v3/api-docs masing-masing service via Eureka
-        # Digunakan oleh Swagger UI gateway untuk menampilkan docs semua service
+        # Proxy ke /v3/api-docs masing-masing service via Eureka
 
         - id: user-service-api-docs
           uri: lb://user-service
@@ -110,12 +109,10 @@ spring:
 eureka:
   client:
     service-url:
-      # URL Eureka Server — gunakan nama container "discovery-service" saat di Docker,
-      # atau "localhost" saat development lokal (jalankan dengan -Deureka.client.service-url.defaultZone=http://localhost:8761/eureka)
-      defaultZone: http://discovery-service:8761/eureka
+      defaultZone: ${EUREKA_SERVER_URL:http://discovery-service:8761/eureka}
     register-with-eureka: true
     fetch-registry: true
-    registry-fetch-interval-seconds: 5   # Lebih cepat mendapat update registry (default 30s)
+    registry-fetch-interval-seconds: 5
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${server.port}
@@ -132,11 +129,10 @@ management:
     health:
       show-details: always
     gateway:
-      access: unrestricted   # Aktifkan endpoint /actuator/gateway untuk melihat routes
+      access: unrestricted
 
 # ========== Swagger / OpenAPI Aggregator ==========
-# Gateway mengagregasi API docs dari semua service melalui proxy routes di atas.
-# Akses: http://localhost:8080/swagger-ui.html → pilih service dari dropdown
+# Akses: http://localhost:8080/swagger-ui.html
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -144,7 +140,6 @@ springdoc:
     operationsSorter: method
     tagsSorter: alpha
     tryItOutEnabled: true
-    # Daftar URL OpenAPI docs dari masing-masing service (via proxy route di atas)
     urls:
       - name: user-service
         url: /api-docs/user
@@ -162,32 +157,3 @@ springdoc:
     path: /v3/api-docs
     enabled: true
   show-actuator: false
-
-# ========== Spring Profiles ==========
-# Untuk development lokal (tanpa Docker), jalankan dengan profile "local":
-#   mvn spring-boot:run -Dspring-boot.run.profiles=local
-# atau set environment variable: SPRING_PROFILES_ACTIVE=local
-
----
-# Profile: local — development lokal tanpa Docker
-spring:
-  config:
-    activate:
-      on-profile: local
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-
----
-# Profile: docker — digunakan saat berjalan di Docker Compose
-spring:
-  config:
-    activate:
-      on-profile: docker
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://discovery-service:8761/eureka
