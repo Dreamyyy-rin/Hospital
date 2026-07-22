@@ -1,4 +1,4 @@
-package com.api.schedule.client;
+package com.api.appointment.client;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,10 +20,10 @@ public interface DoctorClient {
 
     private Integer id;
     private Integer userId;
-    private String userName;
-    private String userEmail;
     private String specialization;
     private String licenseNumber;
     private String status;
+    private String userName;
+    private String userEmail;
   }
 }

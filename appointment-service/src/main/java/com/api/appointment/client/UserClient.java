@@ -1,4 +1,4 @@
-package com.api.schedule.client;
+package com.api.appointment.client;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +21,8 @@ public interface UserClient {
     private Integer id;
     private String name;
     private String email;
-    private String role;
     private String phone;
+    private String role;
+    private String address;
   }
 }
