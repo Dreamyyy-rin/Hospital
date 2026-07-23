@@ -38,7 +38,7 @@ spring:
         - id: medical-record-service
           uri: lb://medical-record-service
           predicates:
-            - Path=/records/**
+            - Path=/medical-records/**
           filters:
             - RewritePath=/records/(?<path>.*), /medical-records/$1
 

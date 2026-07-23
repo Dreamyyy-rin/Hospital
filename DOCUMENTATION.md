@@ -581,7 +581,7 @@ Response:
 curl -X PATCH http://localhost:8080/payments/1/status \
   -H "Content-Type: application/json" \
   -d '{
-    "status": "COMPLETED"
+    "status": "SUCCESS"
   }'
 ```
 
