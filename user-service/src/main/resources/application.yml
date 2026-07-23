@@ -31,6 +31,9 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${server.port}
 
+jwt:
+  secret: ${JWT_SECRET:default_secret_key_at_least_32_characters}
+
 management:
   endpoints:
     web:

@@ -1,18 +1,20 @@
 package com.api.user.utility;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
 @Component
 public class JwtUtil {
 
-  @Value("${jwt.secret}")
+  @Value("${jwt.secret:default_secret_key_at_least_32_characters}")
   private String SECRET;
 
   private Key getSigningKey() {

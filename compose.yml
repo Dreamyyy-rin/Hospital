@@ -1,5 +1,4 @@
 services:
-  # Service Registry
   discovery-service:
     build:
       context: ./discovery-service
@@ -10,14 +9,48 @@ services:
     networks:
       - app-network
     healthcheck:
-      test:
-        ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8761/actuator/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
       start_period: 60s
 
-  # PostgreSQL via Supabase
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: hospital_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hospital_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.adminCommand(\"ping\")'"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
   user-service:
     build:
       context: ./user-service
@@ -28,16 +61,17 @@ services:
     networks:
       - app-network
     environment:
-      - SPRING_DATASOURCE_URL=${SUPABASE_POSTGRES_URL}
-      - SPRING_DATASOURCE_USERNAME=${SUPABASE_POSTGRES_USER}
-      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_POSTGRES_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/hospital_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - JWT_SECRET=${JWT_SECRET:-hospital-local-secret-change-me}
     depends_on:
       discovery-service:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test:
-        ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -53,16 +87,17 @@ services:
     networks:
       - app-network
     environment:
-      - SPRING_DATASOURCE_URL=${SUPABASE_POSTGRES_URL}
-      - SPRING_DATASOURCE_USERNAME=${SUPABASE_POSTGRES_USER}
-      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_POSTGRES_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/hospital_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - JWT_SECRET=${JWT_SECRET:-hospital-local-secret-change-me}
     depends_on:
       discovery-service:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test:
-        ["CMD-SHELL", "curl -f http://localhost:8082/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/actuator/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -78,22 +113,22 @@ services:
     networks:
       - app-network
     environment:
-      - SPRING_DATASOURCE_URL=${SUPABASE_POSTGRES_URL}
-      - SPRING_DATASOURCE_USERNAME=${SUPABASE_POSTGRES_USER}
-      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_POSTGRES_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/hospital_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - JWT_SECRET=${JWT_SECRET:-hospital-local-secret-change-me}
     depends_on:
       discovery-service:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test:
-        ["CMD-SHELL", "curl -f http://localhost:8086/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8086/actuator/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
       start_period: 60s
 
-  # Medical Record Service (MongoDB via Atlas)
   medical-record-service:
     build:
       context: ./medical-record-service
@@ -103,17 +138,16 @@ services:
       - "8085:8085"
     networks:
       - app-network
-    dns:
-      - 8.8.8.8
     environment:
-      - SPRING_DATA_MONGODB_URI=${MONGODB_ATLAS_URI}
-      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/medical_record_db
+      - JWT_SECRET=${JWT_SECRET:-hospital-local-secret-change-me}
     depends_on:
       discovery-service:
         condition: service_healthy
+      mongo:
+        condition: service_healthy
     healthcheck:
-      test:
-        ["CMD-SHELL", "curl -f http://localhost:8085/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8085/actuator/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -129,22 +163,22 @@ services:
     networks:
       - app-network
     environment:
-      - SPRING_DATASOURCE_URL=${SUPABASE_POSTGRES_URL}
-      - SPRING_DATASOURCE_USERNAME=${SUPABASE_POSTGRES_USER}
-      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_POSTGRES_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/hospital_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - JWT_SECRET=${JWT_SECRET:-hospital-local-secret-change-me}
     depends_on:
       discovery-service:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test:
-        ["CMD-SHELL", "curl -f http://localhost:8084/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8084/actuator/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
       start_period: 60s
 
-  # The Orchestrator (Appointment Service)
   appointment-service:
     build:
       context: ./appointment-service
@@ -155,12 +189,14 @@ services:
     networks:
       - app-network
     environment:
-      - SPRING_DATASOURCE_URL=${SUPABASE_POSTGRES_URL}
-      - SPRING_DATASOURCE_USERNAME=${SUPABASE_POSTGRES_USER}
-      - SPRING_DATASOURCE_PASSWORD=${SUPABASE_POSTGRES_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/hospital_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - JWT_SECRET=${JWT_SECRET:-hospital-local-secret-change-me}
     depends_on:
       discovery-service:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
       user-service:
         condition: service_healthy
@@ -171,14 +207,12 @@ services:
       payment-service:
         condition: service_healthy
     healthcheck:
-      test:
-        ["CMD-SHELL", "curl -f http://localhost:8083/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/actuator/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
       start_period: 60s
 
-  # API Gateaway
   gateway:
     build:
       context: ./gateway
@@ -202,10 +236,9 @@ services:
       payment-service:
         condition: service_healthy
       medical-record-service:
-        condition: service_started
+        condition: service_healthy
     healthcheck:
-      test:
-        ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10
@@ -214,3 +247,7 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  postgres-data:
+  mongo-data:
