@@ -6,8 +6,6 @@ spring:
     name: gateway
   main:
     web-application-type: reactive
-  security:
-    enabled: false
 
   cloud:
     gateway:

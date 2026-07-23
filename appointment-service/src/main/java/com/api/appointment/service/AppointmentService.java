@@ -12,6 +12,7 @@ import com.api.appointment.model.AppointmentModel;
 import com.api.appointment.model.AppointmentModel.AppointmentStatus;
 import com.api.appointment.repository.AppointmentRepository;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -104,6 +105,28 @@ public class AppointmentService {
       schedule.getDate() + " " + schedule.getStartTime()
     );
 
+    // ORCHESTRATION: Automatically create payment for the appointment
+    try {
+      PaymentClient.PaymentRequest paymentRequest = new PaymentClient.PaymentRequest();
+      paymentRequest.setAppointmentId(saved.getId());
+      paymentRequest.setTotalAmount(saved.getPrice());
+      paymentRequest.setAmountPaid(java.math.BigDecimal.ZERO); // Will be paid later
+      paymentRequest.setPaymentMethod("PENDING");
+
+      ResponseEntity<PaymentClient.PaymentResponse> paymentResponse =
+        paymentClient.createPayment(paymentRequest);
+
+      if (paymentResponse.getStatusCode().is2xxSuccessful() && paymentResponse.getBody() != null) {
+        saved.setPaymentId(paymentResponse.getBody().getId());
+        saved = appointmentRepository.save(saved);
+        dto.setPaymentId(paymentResponse.getBody().getId());
+        dto.setPaymentStatus("PENDING");
+      }
+    } catch (Exception e) {
+      // Log but don't fail - payment can be created manually if needed
+      System.err.println("Failed to create payment: " + e.getMessage());
+    }
+
     return ResponseEntity.status(HttpStatus.CREATED).body(dto);
   }
 
@@ -139,6 +162,49 @@ public class AppointmentService {
         appointment.setRejectionReason(request.getReason());
         appointment.setUpdatedAt(LocalDateTime.now());
         AppointmentModel saved = appointmentRepository.save(appointment);
+        return toDTO(saved);
+      });
+  }
+
+  /**
+   * Complete an appointment and automatically create medical record.
+   * This is the end-to-end orchestration for appointment completion.
+   */
+  public Optional<AppointmentResponseDTO> completeAppointment(Integer id) {
+    return appointmentRepository
+      .findById(id)
+      .filter(a -> a.getStatus() == AppointmentStatus.APPROVED)
+      .map(appointment -> {
+        // Update appointment status to COMPLETED
+        appointment.setStatus(AppointmentStatus.COMPLETED);
+        appointment.setUpdatedAt(LocalDateTime.now());
+        AppointmentModel saved = appointmentRepository.save(appointment);
+
+        // ORCHESTRATION: Create medical record for completed appointment
+        try {
+          MedicalRecordClient.MedicalRecordRequest recordRequest =
+            new MedicalRecordClient.MedicalRecordRequest();
+          recordRequest.setAppointmentId(String.valueOf(saved.getId()));
+          recordRequest.setDoctorId(saved.getDoctorId());
+          recordRequest.setPatientId(saved.getPatientId());
+          recordRequest.setComplaints(
+            saved.getComplaint() != null
+              ? Arrays.asList(saved.getComplaint().split(","))
+              : Arrays.asList("General checkup")
+          );
+
+          ResponseEntity<MedicalRecordClient.MedicalRecordResponse> recordResponse =
+            medicalRecordClient.createMedicalRecord(recordRequest);
+
+          if (recordResponse.getStatusCode().is2xxSuccessful() && recordResponse.getBody() != null) {
+            saved.setMedicalRecordId(recordResponse.getBody().getId());
+            saved = appointmentRepository.save(saved);
+          }
+        } catch (Exception e) {
+          // Log but don't fail - medical record can be created manually if needed
+          System.err.println("Failed to create medical record: " + e.getMessage());
+        }
+
         return toDTO(saved);
       });
   }

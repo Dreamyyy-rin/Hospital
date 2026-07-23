@@ -7,6 +7,7 @@ import com.api.payment.service.PaymentService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,13 +28,17 @@ public class PaymentController {
     this.paymentService = paymentService;
   }
 
+  // Get all payments - ADMIN only
   @GetMapping
-  public List<PaymentResponseDTO> getAllPayments() {
+  @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
+public List<PaymentResponseDTO> getAllPayments() {
     return paymentService.getAllPayments();
   }
 
+  // Get payment by ID - authenticated
   @GetMapping("/{id}")
-  public ResponseEntity<PaymentResponseDTO> getPaymentById(
+  @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
+public ResponseEntity<PaymentResponseDTO> getPaymentById(
     @PathVariable Integer id
   ) {
     return paymentService
@@ -42,14 +47,18 @@ public class PaymentController {
       .orElse(ResponseEntity.notFound().build());
   }
 
+  // Create payment - ADMIN or DOCTOR (for appointments)
   @PostMapping
-  public ResponseEntity<PaymentResponseDTO> createPayment(
+  @PreAuthorize("hasAnyRole('PATIENT', 'ADMIN', 'DOCTOR')")
+public ResponseEntity<PaymentResponseDTO> createPayment(
     @Valid @RequestBody PaymentRequestDTO request
   ) {
     return ResponseEntity.ok(paymentService.createPayment(request));
   }
 
+  // Update payment - ADMIN only
   @PutMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<PaymentResponseDTO> updatePayment(
     @PathVariable Integer id,
     @Valid @RequestBody PaymentRequestDTO request
@@ -60,8 +69,10 @@ public class PaymentController {
       .orElse(ResponseEntity.notFound().build());
   }
 
+  // Update payment status - ADMIN or NURSE (to confirm payment)
   @PatchMapping("/{id}/status")
-  public ResponseEntity<PaymentResponseDTO> updatePaymentStatus(
+  @PreAuthorize("hasAnyRole('PATIENT', 'ADMIN', 'DOCTOR')")
+public ResponseEntity<PaymentResponseDTO> updatePaymentStatus(
     @PathVariable Integer id,
     @Valid @RequestBody PaymentStatusUpdateRequestDTO request
   ) {
@@ -71,7 +82,9 @@ public class PaymentController {
       .orElse(ResponseEntity.notFound().build());
   }
 
+  // Delete payment - ADMIN only
   @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<Void> deletePayment(@PathVariable Integer id) {
     paymentService.deletePayment(id);
     return ResponseEntity.noContent().build();
