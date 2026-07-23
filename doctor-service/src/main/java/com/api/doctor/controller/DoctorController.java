@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,8 +22,10 @@ public class DoctorController {
     this.doctorService = doctorService;
   }
 
+  // Get all doctors - ADMIN or DOCTOR
   @GetMapping
-  public ResponseEntity<List<DoctorResponseDTO>> getAllDoctors() {
+  @PreAuthorize("isAuthenticated()")
+public ResponseEntity<List<DoctorResponseDTO>> getAllDoctors() {
     List<DoctorResponseDTO> doctors = doctorService
       .getAllDoctors()
       .stream()
@@ -31,8 +34,10 @@ public class DoctorController {
     return ResponseEntity.ok(doctors);
   }
 
+  // Get doctor by ID - authenticated
   @GetMapping("/{id}")
-  public ResponseEntity<DoctorResponseDTO> getDoctorById(
+  @PreAuthorize("isAuthenticated()")
+public ResponseEntity<DoctorResponseDTO> getDoctorById(
     @PathVariable Integer id
   ) {
     return doctorService
@@ -41,8 +46,10 @@ public class DoctorController {
       .orElse(ResponseEntity.notFound().build());
   }
 
+  // Get doctor by user ID - authenticated
   @GetMapping("/user/{userId}")
-  public ResponseEntity<DoctorResponseDTO> getDoctorByUserId(
+  @PreAuthorize("isAuthenticated()")
+public ResponseEntity<DoctorResponseDTO> getDoctorByUserId(
     @PathVariable Integer userId
   ) {
     return doctorService
@@ -51,8 +58,10 @@ public class DoctorController {
       .orElse(ResponseEntity.notFound().build());
   }
 
+  // Get active doctors - any authenticated user
   @GetMapping("/active")
-  public ResponseEntity<List<DoctorResponseDTO>> getActiveDoctors() {
+  @PreAuthorize("isAuthenticated()")
+public ResponseEntity<List<DoctorResponseDTO>> getActiveDoctors() {
     List<DoctorResponseDTO> doctors = doctorService
       .getActiveDoctors()
       .stream()
@@ -61,22 +70,20 @@ public class DoctorController {
     return ResponseEntity.ok(doctors);
   }
 
-  /**
-   * Create doctor with existing user (userId provided)
-   */
+  // Create doctor - ADMIN only
   @PostMapping
-  public ResponseEntity<DoctorResponseDTO> createDoctor(
+  @PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<DoctorResponseDTO> createDoctor(
     @Valid @RequestBody DoctorRequestDTO request
   ) {
     DoctorResponseDTO created = doctorService.createDoctor(request);
     return ResponseEntity.ok(created);
   }
 
-  /**
-   * Admin: Create both user account and doctor in one call
-   */
+  // Admin: Create both user account and doctor in one call
   @PostMapping("/admin/create-with-user")
-  public ResponseEntity<DoctorWithUserResponseDTO> createDoctorWithUser(
+  @PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<DoctorWithUserResponseDTO> createDoctorWithUser(
     @Valid @RequestBody DoctorWithUserRequestDTO request
   ) {
     DoctorWithUserResponseDTO created = doctorService.createDoctorWithUser(
@@ -85,8 +92,10 @@ public class DoctorController {
     return ResponseEntity.ok(created);
   }
 
+  // Update doctor - ADMIN only
   @PutMapping("/{id}")
-  public ResponseEntity<DoctorResponseDTO> updateDoctor(
+  @PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<DoctorResponseDTO> updateDoctor(
     @PathVariable Integer id,
     @Valid @RequestBody DoctorRequestDTO request
   ) {
@@ -98,8 +107,10 @@ public class DoctorController {
     }
   }
 
+  // Delete doctor - ADMIN only
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteDoctor(@PathVariable Integer id) {
+  @PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<Void> deleteDoctor(@PathVariable Integer id) {
     doctorService.deleteDoctor(id);
     return ResponseEntity.noContent().build();
   }

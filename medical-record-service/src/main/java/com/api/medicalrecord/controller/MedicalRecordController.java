@@ -6,6 +6,7 @@ import com.api.medicalrecord.service.MedicalRecordService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,27 +26,35 @@ public class MedicalRecordController {
         this.medicalRecordService = medicalRecordService;
     }
 
+    // Get all medical records - ADMIN or DOCTOR only
     @GetMapping
-    public List<MedicalRecordResponseDTO> getAllMedicalRecords() {
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'PATIENT')")
+public List<MedicalRecordResponseDTO> getAllMedicalRecords() {
         return medicalRecordService.getAllMedicalRecords();
     }
 
+    // Get medical record by ID - ADMIN or DOCTOR
     @GetMapping("/{id}")
-    public ResponseEntity<MedicalRecordResponseDTO> getMedicalRecordById(
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR', 'PATIENT')")
+public ResponseEntity<MedicalRecordResponseDTO> getMedicalRecordById(
             @PathVariable String id) {
         return medicalRecordService.getMedicalRecordById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Create medical record - ADMIN or DOCTOR (typically via appointment-service orchestration)
     @PostMapping
-    public ResponseEntity<MedicalRecordResponseDTO> createMedicalRecord(
+    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+public ResponseEntity<MedicalRecordResponseDTO> createMedicalRecord(
             @Valid @RequestBody MedicalRecordRequestDTO request) {
         return ResponseEntity.ok(medicalRecordService.createMedicalRecord(request));
     }
 
+    // Update medical record - ADMIN or DOCTOR (owner)
     @PutMapping("/{id}")
-    public ResponseEntity<MedicalRecordResponseDTO> updateMedicalRecord(
+    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+public ResponseEntity<MedicalRecordResponseDTO> updateMedicalRecord(
             @PathVariable String id,
             @Valid @RequestBody MedicalRecordRequestDTO request) {
         return medicalRecordService.updateMedicalRecord(id, request)
@@ -53,7 +62,9 @@ public class MedicalRecordController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    // Delete medical record - ADMIN only
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteMedicalRecord(@PathVariable String id) {
         medicalRecordService.deleteMedicalRecord(id);
         return ResponseEntity.noContent().build();

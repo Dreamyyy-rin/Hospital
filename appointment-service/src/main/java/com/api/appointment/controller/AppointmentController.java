@@ -8,6 +8,7 @@ import com.api.appointment.service.AppointmentService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,15 +27,17 @@ public class AppointmentController {
     this.appointmentService = appointmentService;
   }
 
-  // Get all appointments
+  // Get all appointments - ADMIN only
   @GetMapping
-  public List<AppointmentResponseDTO> getAllAppointments() {
+  @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
+public List<AppointmentResponseDTO> getAllAppointments() {
     return appointmentService.getAllAppointments();
   }
 
-  // Get appointment by ID
+  // Get appointment by ID - authenticated users
   @GetMapping("/{id}")
-  public ResponseEntity<AppointmentResponseDTO> getAppointmentById(
+  @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
+public ResponseEntity<AppointmentResponseDTO> getAppointmentById(
     @PathVariable Integer id
   ) {
     return appointmentService
@@ -45,21 +48,24 @@ public class AppointmentController {
 
   // Patient creates appointment request
   @PostMapping
-  public ResponseEntity<AppointmentResponseDTO> createAppointment(
+  @PreAuthorize("hasAnyRole('PATIENT', 'ADMIN')")
+public ResponseEntity<AppointmentResponseDTO> createAppointment(
     @Valid @RequestBody AppointmentRequestDTO request
   ) {
     return appointmentService.createAppointment(request);
   }
 
-  // Nurse views pending appointments
+  // Get pending appointments - NURSE or ADMIN
   @GetMapping("/pending")
+  @PreAuthorize("hasAnyRole('ADMIN', 'NURSE')")
   public List<AppointmentResponseDTO> getPendingAppointments() {
     return appointmentService.getPendingAppointments();
   }
 
   // Nurse approves appointment
   @PatchMapping("/{id}/approve")
-  public ResponseEntity<AppointmentResponseDTO> approveAppointment(
+  @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+public ResponseEntity<AppointmentResponseDTO> approveAppointment(
     @PathVariable Integer id
   ) {
     return appointmentService
@@ -70,12 +76,25 @@ public class AppointmentController {
 
   // Nurse rejects appointment
   @PatchMapping("/{id}/reject")
-  public ResponseEntity<AppointmentResponseDTO> rejectAppointment(
+  @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+public ResponseEntity<AppointmentResponseDTO> rejectAppointment(
     @PathVariable Integer id,
     @Valid @RequestBody AppointmentRejectDTO request
   ) {
     return appointmentService
       .rejectAppointment(id, request)
+      .map(ResponseEntity::ok)
+      .orElse(ResponseEntity.notFound().build());
+  }
+
+  // Complete appointment - creates medical record automatically
+  @PatchMapping("/{id}/complete")
+  @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+public ResponseEntity<AppointmentResponseDTO> completeAppointment(
+    @PathVariable Integer id
+  ) {
+    return appointmentService
+      .completeAppointment(id)
       .map(ResponseEntity::ok)
       .orElse(ResponseEntity.notFound().build());
   }
